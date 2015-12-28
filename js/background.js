@@ -21,7 +21,7 @@ function callout(domain) {
   var client = new XMLHttpRequest();
   client.open("GET", url, false);
   client.setRequestHeader("Content-Type", "text/plain");
-  client.send();
+  client.send(null);
   return client.status === 200;
 }
 
