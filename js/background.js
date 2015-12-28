@@ -4,13 +4,10 @@ chrome.webRequest.onBeforeRequest.addListener(
     if (isGoogle(domain)) {
       return;
     }
-    //console.log(domain);
     if (!callout(domain)) {
+      console.log("redirecting...");
       return {redirectUrl: chrome.extension.getURL("html/redirectInfo.html")};
     }
-    /*if (details.url.match(re)) {
-      return {redirectUrl: chrome.extension.getURL("html/redirectInfo.html")};
-    }*/
   },
   {
     urls: ["<all_urls>"],
@@ -25,8 +22,6 @@ function callout(domain) {
   client.open("GET", url, false);
   client.setRequestHeader("Content-Type", "text/plain");
   client.send();
-  console.log(client.status);
-  console.log(client);
   return client.status === 200;
 }
 
