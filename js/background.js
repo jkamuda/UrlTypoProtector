@@ -1,7 +1,10 @@
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
-    console.log(details);
     var domain = stripDomain(details.url);
+    if (isGoogle(domain)) {
+      return;
+    }
+    console.log(domain);
     /*if (details.url.match(re)) {
       return {redirectUrl: chrome.extension.getURL("html/redirectInfo.html")};
     }*/
@@ -14,10 +17,14 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 function stripDomain(fullUrl) {
-  //console.log(fullUrl);
   return fullUrl
     .replace('http://', '')
     .replace('https://', '')
     .replace('www.', '')
     .split(/[/?#]/)[0];
+};
+
+var googleRe = /google\./;
+function isGoogle(domain) {
+  return domain.match(googleRe) != null;
 };
