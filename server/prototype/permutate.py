@@ -11,5 +11,6 @@ def get_permutations(word):
   return set(deletes + transposes + replaces + inserts)
 
 if __name__ == '__main__':
-  print ', '.join(get_permutations('google'))
-  print len(get_permutations('google'))
+  word_permutations = get_permutations('google')
+  print ', '.join(word_permutations)
+  print len(word_permutations)
