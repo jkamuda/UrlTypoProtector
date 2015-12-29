@@ -4,9 +4,9 @@ chrome.webRequest.onBeforeRequest.addListener(
     if (isGoogle(domain)) {
       return;
     }
-    if (!callout(domain)) {
-      console.log("redirecting...");
-      return {redirectUrl: chrome.extension.getURL("html/redirectInfo.html")};
+    var corrections = callout(domain);
+    if (corrections) {
+      return {redirectUrl: 'http://' + corrections + '.com'};
     }
   },
   {
@@ -22,7 +22,11 @@ function callout(domain) {
   client.open("GET", url, false);
   client.setRequestHeader("Content-Type", "text/plain");
   client.send(null);
-  return client.status === 200;
+  if (client.response) {
+    return JSON.parse(client.response).correction;
+  } else {
+    return '';
+  }
 }
 
 function stripDomain(fullUrl) {
@@ -35,5 +39,5 @@ function stripDomain(fullUrl) {
 
 var googleRe = /google\./;
 function isGoogle(domain) {
-  return domain.match(googleRe) != null;
+  return domain.match(googleRe) != null || domain === 'chrome-extension:';
 };

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import web
+import redis
+
+pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
 urls = (
   '/validate/(.*)', 'validate_domain',
@@ -10,9 +13,15 @@ app = web.application(urls, globals())
 
 class validate_domain:
   def GET(self, domain):
-    if domain == 'yahoo.com':
-      return web.notfound("bad stuff man");
-    return 'you got it - ' + domain
+    trimmedDomain = domain.replace(".com", "")
+    print trimmedDomain
+    r_server = redis.StrictRedis(connection_pool=pool)
+    correction = r_server.get(trimmedDomain)
+    print correction
+    if correction:
+      return correction
+    else:
+      return ''
 
 class get_user:
   def GET(self, user):
