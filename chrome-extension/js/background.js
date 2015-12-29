@@ -1,12 +1,15 @@
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     var domain = stripDomain(details.url);
-    if (isGoogle(domain)) {
+    if (isGoogle(domain) || whitelist[domain]) {
       return;
     }
     var corrections = callout(domain);
     if (corrections) {
+      whitelist[corrections] = true;
       return {redirectUrl: 'http://' + corrections + '.com'};
+    } else {
+      whitelist[domain] = true;
     }
   },
   {
@@ -15,6 +18,8 @@ chrome.webRequest.onBeforeRequest.addListener(
   },
   ["blocking"]
 );
+
+var whitelist = {};
 
 function callout(domain) {
   var url = "http://localhost:8080/validate/" + domain;
@@ -34,7 +39,8 @@ function stripDomain(fullUrl) {
     .replace('http://', '')
     .replace('https://', '')
     .replace('www.', '')
-    .split(/[/?#]/)[0];
+    .split(/[/?#]/)[0]
+    .replace('.com', '');
 };
 
 var googleRe = /google\./;

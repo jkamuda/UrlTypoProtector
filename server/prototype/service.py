@@ -14,10 +14,8 @@ app = web.application(urls, globals())
 class validate_domain:
   def GET(self, domain):
     trimmedDomain = domain.replace(".com", "")
-    print trimmedDomain
     r_server = redis.StrictRedis(connection_pool=pool)
     correction = r_server.get(trimmedDomain)
-    print correction
     if correction:
       return correction
     else:
