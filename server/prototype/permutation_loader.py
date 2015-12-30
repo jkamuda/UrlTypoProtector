@@ -7,18 +7,22 @@ import permutation_tools
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
-def load_word_permutations(word):
+def add_permutations_for_domains(domains):
+  for domain in uniqueDomains:
+    add_permutations_for_domain(domain)
+
+def add_permutations_for_domain(domain):
   r_server = redis.StrictRedis(connection_pool=pool)
 
   correction_info = {}
-  correction_info['correction'] = word
+  correction_info['correction'] = domain
   correction_info_json = json.dumps(correction_info)
 
-  word_permutations = permutation_tools.get_permutations(word)
-  for permutation in word_permutations:
+  domain_permutations = permutation_tools.get_permutations(domain)
+  for permutation in domain_permutations:
     r_server.set(permutation, correction_info_json)
 
-  print 'loaded {0} permutations for {1}'.format(len(word_permutations), word)
+  print 'loaded {0} permutations for {1}'.format(len(domain_permutations), domain)
 
 def load_unique_domains_from_csv(filename):
   uniqueDomains = set()
@@ -37,5 +41,6 @@ def load_unique_domains_from_csv(filename):
 
 if __name__ == "__main__":
   #load_word_permutations("youtube")
-  uniqueDomains = load_unique_domains_from_csv('/home/alpha/workspace/top-100.csv')
-  print uniqueDomains
+  uniqueDomains = load_unique_domains_from_csv('/home/alpha/workspace/top-1m.csv')
+  #print len(uniqueDomains)
+  add_permutations_for_domains(uniqueDomains)
