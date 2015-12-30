@@ -1,5 +1,7 @@
 import redis
 import json
+import csv
+import sys
 
 import permutation_tools
 
@@ -18,5 +20,22 @@ def load_word_permutations(word):
 
   print 'loaded {0} permutations for {1}'.format(len(word_permutations), word)
 
+def load_unique_domains_from_csv(filename):
+  uniqueDomains = set()
+  f = open(filename, 'rt')
+  try:
+    reader = csv.reader(f)
+    for row in reader:
+      domain = row[1].split('.')[0]
+      if len(domain) < 4:
+        continue
+      uniqueDomains.add(domain)
+  finally:
+    f.close()
+
+  return uniqueDomains
+
 if __name__ == "__main__":
-  load_word_permutations("youtube")
+  #load_word_permutations("youtube")
+  uniqueDomains = load_unique_domains_from_csv('/home/alpha/workspace/top-100.csv')
+  print uniqueDomains
