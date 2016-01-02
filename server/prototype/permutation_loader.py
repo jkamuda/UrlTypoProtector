@@ -8,7 +8,8 @@ import sys
 import permutation_tools
 import redis_utils as r_utils
 
-DOMAIN_CSV = '/home/alpha/workspace/top-100.csv'
+#DOMAIN_CSV = '/home/alpha/workspace/domain_data/top-100.csv'
+DOMAIN_CSV = '/home/alpha/workspace/domain_data/moz/top-500.csv'
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
@@ -40,8 +41,7 @@ def add_permutations_for_domain(domain):
   domain_typo_permutations = permutation_tools.get_permutations(domain)
   for typo in domain_typo_permutations:
     typo_key = r_utils.get_typo_key(typo)
-    #if r_server.exists(typo_key):
-    #  print 'conflict on ' + typo
+    identify_conflict(r_server, domain, typo)
     if typo == domain:
       continue
     r_server.hset(typo_key, 'intended', domain_id)
@@ -53,6 +53,13 @@ def add_domain(r_server, domain):
   r_server.hset(r_utils.get_domain_key(domain_id), 'url', domain)
   r_server.hset(r_utils.DOMAIN_NAME_KEY_FORMAT.format(domain), 'id', domain_id)
   return domain_id
+
+def identify_conflict(r_server, domain, typo):
+  typo_key = r_utils.get_typo_key(typo)
+  if r_server.exists(typo_key):
+    domain_id = r_server.hget(typo_key, 'intended')
+    intended_domain = r_server.hget(r_utils.get_domain_key(domain_id), 'url')
+    print 'conflict for ' + domain + ' on ' + typo + ' (' + intended_domain + ')'
 
 def load_unique_domains_from_csv(filename):
   uniqueDomains = set()
@@ -77,3 +84,5 @@ def get_redis_connection():
 
 if __name__ == "__main__":
   load_typos()
+  #domains = load_unique_domains_from_csv('/home/alpha/workspace/domain_data/moz/top-500.csv')
+  #print domains
