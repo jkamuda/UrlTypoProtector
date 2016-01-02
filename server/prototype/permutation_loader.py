@@ -18,7 +18,7 @@ def add_permutations_for_domains(domains):
 def report_progress(completed, total):
   sys.stdout.write('\r')
   percentComplete = float(completed) / total * 100
-  sys.stdout.write("[%-50s] %3.0f%%" % ('=' * int((percentComplete) / 2), percentComplete))
+  sys.stdout.write("[%-50s] %3.2f%%" % ('=' * int((percentComplete) / 2), percentComplete))
   sys.stdout.flush()
 
 def add_permutations_for_domain(domain):
