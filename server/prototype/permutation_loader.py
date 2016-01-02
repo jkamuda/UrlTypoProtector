@@ -1,3 +1,5 @@
+#!/usr/bin/env pythons
+
 import redis
 import json
 import csv
@@ -5,12 +7,25 @@ import sys
 
 import permutation_tools
 
+DOMAIN_CSV = '/home/alpha/workspace/top-100.csv'
+
+DOMAIN_ID_KEY = 'next_domain_id'
+DOMAIN_KEY_FORMAT = 'domain:{0}'
+DOMAIN_NAME_KEY_FORMAT = 'domain.name:{0}'
+TYPO_KEY_FORMAT = 'typo:{0}'
+
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
+
+def load_typos():
+  uniqueDomains = load_unique_domains_from_csv(DOMAIN_CSV)
+  print 'flushing database...'
+  flush_db()
+  add_permutations_for_domains(uniqueDomains)
 
 def add_permutations_for_domains(domains):
   totalDomains = len(domains)
   completed = 0
-  for domain in uniqueDomains:
+  for domain in domains:
     add_permutations_for_domain(domain)
     completed += 1
     report_progress(completed, totalDomains)
@@ -22,17 +37,21 @@ def report_progress(completed, total):
   sys.stdout.flush()
 
 def add_permutations_for_domain(domain):
-  r_server = redis.StrictRedis(connection_pool=pool)
+  r_server = get_redis_connection()
 
-  correction_info = {}
-  correction_info['correction'] = domain
-  correction_info_json = json.dumps(correction_info)
+  domain_id = add_domain(r_server, domain)
 
-  domain_permutations = permutation_tools.get_permutations(domain)
-  for permutation in domain_permutations:
-    r_server.set(permutation, correction_info_json)
+  domain_typo_permutations = permutation_tools.get_permutations(domain)
+  for typo in domain_typo_permutations:
+    r_server.hset(TYPO_KEY_FORMAT.format(typo), 'intended', domain_id)
 
   #print 'loaded {0} permutations for {1}'.format(len(domain_permutations), domain)
+
+def add_domain(r_server, domain):
+  domain_id = r_server.incr(DOMAIN_ID_KEY)
+  r_server.hset(DOMAIN_KEY_FORMAT.format(domain_id), 'url', domain)
+  r_server.hset(DOMAIN_NAME_KEY_FORMAT.format(domain), 'id', domain_id)
+  return domain_id
 
 def load_unique_domains_from_csv(filename):
   uniqueDomains = set()
@@ -49,8 +68,11 @@ def load_unique_domains_from_csv(filename):
 
   return uniqueDomains
 
+def flush_db():
+  get_redis_connection().flushdb()
+
+def get_redis_connection():
+  return redis.StrictRedis(connection_pool=pool)
+
 if __name__ == "__main__":
-  #load_word_permutations("youtube")
-  uniqueDomains = load_unique_domains_from_csv('/home/alpha/workspace/top-100.csv')
-  #print len(uniqueDomains)
-  add_permutations_for_domains(uniqueDomains)
+  load_typos()
