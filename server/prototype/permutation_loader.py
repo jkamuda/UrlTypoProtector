@@ -1,4 +1,4 @@
-#!/usr/bin/env pythons
+#!/usr/bin/env python
 
 import redis
 import json
@@ -6,13 +6,9 @@ import csv
 import sys
 
 import permutation_tools
+import redis_utils as r_utils
 
 DOMAIN_CSV = '/home/alpha/workspace/top-100.csv'
-
-DOMAIN_ID_KEY = 'next_domain_id'
-DOMAIN_KEY_FORMAT = 'domain:{0}'
-DOMAIN_NAME_KEY_FORMAT = 'domain.name:{0}'
-TYPO_KEY_FORMAT = 'typo:{0}'
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
@@ -43,14 +39,19 @@ def add_permutations_for_domain(domain):
 
   domain_typo_permutations = permutation_tools.get_permutations(domain)
   for typo in domain_typo_permutations:
-    r_server.hset(TYPO_KEY_FORMAT.format(typo), 'intended', domain_id)
+    typo_key = r_utils.get_typo_key(typo)
+    #if r_server.exists(typo_key):
+    #  print 'conflict on ' + typo
+    if typo == domain:
+      continue
+    r_server.hset(typo_key, 'intended', domain_id)
 
   #print 'loaded {0} permutations for {1}'.format(len(domain_permutations), domain)
 
 def add_domain(r_server, domain):
-  domain_id = r_server.incr(DOMAIN_ID_KEY)
-  r_server.hset(DOMAIN_KEY_FORMAT.format(domain_id), 'url', domain)
-  r_server.hset(DOMAIN_NAME_KEY_FORMAT.format(domain), 'id', domain_id)
+  domain_id = r_server.incr(r_utils.DOMAIN_ID_KEY)
+  r_server.hset(r_utils.get_domain_key(domain_id), 'url', domain)
+  r_server.hset(r_utils.DOMAIN_NAME_KEY_FORMAT.format(domain), 'id', domain_id)
   return domain_id
 
 def load_unique_domains_from_csv(filename):
