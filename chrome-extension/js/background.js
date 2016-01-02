@@ -22,7 +22,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 var whitelist = {};
 
 function callout(domain) {
-  var url = "http://localhost:8080/validate/" + domain;
+  var url = "http://localhost:8080/domain/" + domain;
   var client = new XMLHttpRequest();
   client.open("GET", url, false);
   client.setRequestHeader("Content-Type", "text/plain");
