@@ -22,13 +22,13 @@ chrome.webRequest.onBeforeRequest.addListener(
 var whitelist = {};
 
 function callout(domain) {
-  var url = "http://localhost:8080/domain/" + domain;
+  var url = "http://localhost:8080/v1/domain/" + domain;
   var client = new XMLHttpRequest();
   client.open("GET", url, false);
   client.setRequestHeader("Content-Type", "text/plain");
   client.send(null);
   if (client.response) {
-    return JSON.parse(client.response).correction;
+    return JSON.parse(client.response).intended;
   } else {
     return '';
   }

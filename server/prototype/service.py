@@ -4,12 +4,12 @@ import web
 import redis
 import redis_utils as r_utils
 
-URL_CORRECTION_FORMAT = '{{"correction": "{0}"}}'
+URL_CORRECTION_FORMAT = '{{"intended": "{0}"}}'
 
 pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
 urls = (
-  '/domain/(.*)', 'validate_domain'
+  '/v1/domain/(.*)', 'validate_domain'
 )
 
 app = web.application(urls, globals())
