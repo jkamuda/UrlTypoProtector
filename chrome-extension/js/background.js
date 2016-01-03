@@ -23,7 +23,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 function updateUserWhitelist(domain) {
-  if (fixedWhitelist[domain] || userWhitelist[domain]) {
+	if (fixedWhitelist[domain] || userWhitelist[domain]) {
     return;
   }
   userWhitelist[domain] = true;
