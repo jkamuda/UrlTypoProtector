@@ -1,7 +1,10 @@
+var fixed_whitelist = {};
+var whitelist = {};
+
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     var domain = stripDomain(details.url);
-    if (isGoogle(domain) || whitelist[domain]) {
+    if (fixed_whitelist[domain] || whitelist[domain]) {
       return;
     }
     var corrections = callout(domain);
@@ -19,7 +22,26 @@ chrome.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
-var whitelist = {};
+function loadFixedWhitelist() {
+  fixed_whitelist['chrome-extension:'] = true;
+  readTextFile(chrome.extension.getURL('resources/fixed_whitelist.txt'));
+}
+
+function readTextFile(file) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", file, false);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      var whitelist_domains = xhr.responseText.split(',');
+      for (var idx in whitelist_domains) {
+        fixed_whitelist[whitelist_domains[idx]] = true;
+      }
+    }
+  }
+  xhr.send(null);
+}
+
+loadFixedWhitelist();
 
 function callout(domain) {
   var url = "http://localhost:8080/v1/domain/" + domain;
