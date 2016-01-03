@@ -1,18 +1,18 @@
 var fixed_whitelist = {};
-var whitelist = {};
+var userWhitelist = {};
 
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     var domain = stripDomain(details.url);
-    if (fixed_whitelist[domain] || whitelist[domain]) {
+    if (fixed_whitelist[domain] || userWhitelist[domain]) {
       return;
     }
     var corrections = callout(domain);
     if (corrections) {
-      whitelist[corrections] = true;
+      updateUserWhitelist(domain);
       return {redirectUrl: 'http://' + corrections + '.com'};
     } else {
-      whitelist[domain] = true;
+      updateUserWhitelist(domain);
     }
   },
   {
@@ -22,9 +22,27 @@ chrome.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
+function updateUserWhitelist(domain) {
+  userWhitelist[domain] = true;
+  saveUserWhitelist();
+}
+
+function saveUserWhitelist() {
+  localStorage['user_whitelist'] = JSON.stringify(userWhitelist);
+}
+
 function loadFixedWhitelist() {
   fixed_whitelist['chrome-extension:'] = true;
   readTextFile(chrome.extension.getURL('resources/fixed_whitelist.txt'));
+}
+
+function loadUserWhitelist() {
+  if (!localStorage['user_whitelist']) {
+     userWhitelist = {};
+  } else {
+    userWhitelist = JSON.parse(localStorage['user_whitelist']);
+    console.log(userWhitelist);
+  }
 }
 
 function readTextFile(file) {
@@ -42,6 +60,7 @@ function readTextFile(file) {
 }
 
 loadFixedWhitelist();
+loadUserWhitelist();
 
 function callout(domain) {
   var url = "http://localhost:8080/v1/domain/" + domain;
