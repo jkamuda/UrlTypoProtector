@@ -4,7 +4,7 @@ var whitelist = {};
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     var domain = stripDomain(details.url);
-    if (isGoogle(domain) || whitelist[domain]) {
+    if (fixed_whitelist[domain] || whitelist[domain]) {
       return;
     }
     var corrections = callout(domain);
@@ -23,9 +23,8 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 function loadFixedWhitelist() {
-  console.log('loading fixed whitelist...');
-  var whitelist = chrome.extension.getURL('resources/fixed_whitelist.txt');
-  readTextFile(whitelist);
+  fixed_whitelist['chrome-extension:'] = true;
+  readTextFile(chrome.extension.getURL('resources/fixed_whitelist.txt'));
 }
 
 function readTextFile(file) {
