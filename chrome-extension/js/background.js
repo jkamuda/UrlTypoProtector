@@ -1,15 +1,15 @@
-var fixed_whitelist = {};
+var fixedWhitelist = {};
 var userWhitelist = {};
 
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     var domain = stripDomain(details.url);
-    if (fixed_whitelist[domain] || userWhitelist[domain]) {
+    if (fixedWhitelist[domain] || userWhitelist[domain]) {
       return;
     }
     var corrections = callout(domain);
     if (corrections) {
-      updateUserWhitelist(domain);
+      // TODO consider persisting typo correction mapping
       return {redirectUrl: 'http://' + corrections + '.com'};
     } else {
       updateUserWhitelist(domain);
@@ -23,6 +23,9 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 function updateUserWhitelist(domain) {
+  if (fixedWhitelist[domain] || userWhitelist[domain]) {
+    return;
+  }
   userWhitelist[domain] = true;
   saveUserWhitelist();
 }
@@ -32,7 +35,7 @@ function saveUserWhitelist() {
 }
 
 function loadFixedWhitelist() {
-  fixed_whitelist['chrome-extension:'] = true;
+  fixedWhitelist['chrome-extension:'] = true;
   readTextFile(chrome.extension.getURL('resources/fixed_whitelist.txt'));
 }
 
@@ -52,7 +55,7 @@ function readTextFile(file) {
     if (xhr.readyState === 4 && xhr.status === 200) {
       var whitelist_domains = xhr.responseText.split(',');
       for (var idx in whitelist_domains) {
-        fixed_whitelist[whitelist_domains[idx]] = true;
+        fixedWhitelist[whitelist_domains[idx]] = true;
       }
     }
   }
