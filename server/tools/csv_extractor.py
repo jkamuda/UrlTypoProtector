@@ -48,7 +48,7 @@ def to_csv(filename):
 def compile_fixed_whitelist(whitelist_domains):
   with open(FIXED_WHITELIST, 'wb') as f:
     for domain in whitelist_domains:
-      f.write('{}\n'.format(domain))
+      f.write('{},'.format(domain))
 
 if __name__ == '__main__':
   #to_csv(DOMAIN_TXT_QUANTCAST)

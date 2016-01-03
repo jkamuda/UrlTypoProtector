@@ -1,3 +1,6 @@
+var fixed_whitelist = {};
+var whitelist = {};
+
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     var domain = stripDomain(details.url);
@@ -19,7 +22,27 @@ chrome.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
-var whitelist = {};
+function loadFixedWhitelist() {
+  console.log('loading fixed whitelist...');
+  var whitelist = chrome.extension.getURL('resources/fixed_whitelist.txt');
+  readTextFile(whitelist);
+}
+
+function readTextFile(file) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", file, false);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      var whitelist_domains = xhr.responseText.split(',');
+      for (var idx in whitelist_domains) {
+        fixed_whitelist[whitelist_domains[idx]] = true;
+      }
+    }
+  }
+  xhr.send(null);
+}
+
+loadFixedWhitelist();
 
 function callout(domain) {
   var url = "http://localhost:8080/v1/domain/" + domain;
